@@ -24,7 +24,7 @@ export const newUser = async (req, res, next) => {
 };
 export const loginUser = async (req, res, next) => {
   try {
-    const { userName, password } = req.body;
+    let { userName, password } = req.body;
     if (!userName) {
       return next(new Error("please provide correct username!"));
     }
@@ -46,28 +46,32 @@ export const loginUser = async (req, res, next) => {
       user.password,
       process.env.PASS_SEC
     );
-    const pass_word = hashedPassword.toString(CryptoJS.enc.Utf8);
+    const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
 
-    if (pass_word !== req.body.password) {
+    if (originalPassword !== req.body.password) {
       return next(new Error("password is incorrect!"));
     }
-
-    const token = jwt.sign({ user }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        maxAge: 1500000,
-      })
-      .json(user);
+    if (
+      req.body.userName == user.userName &&
+      originalPassword == req.body.password
+    ) {
+      const { password, ...others } = user._doc;
+      const accessToken = jwt.sign(
+        { id: user._id, isAdmin: user.isAdmin },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1d",
+        }
+      );
+      res.json({ ...others, accessToken });
+    }
   } catch (err) {
     next(err);
   }
 };
 
 export const logoutUser = (req, res, next) => {
-  res.clearCookie("token", { httpOnly: true }).json({
+  res.json({
     message: "Logged Out",
   });
 };

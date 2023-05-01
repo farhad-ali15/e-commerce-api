@@ -1,8 +1,5 @@
 import express from "express";
-import {
-  isAuthenticatedUser,
-  isAuthorizedUser,
-} from "../middlewares/authHandler.js";
+
 import {
   getAllProducts,
   updateProduct,
@@ -10,13 +7,21 @@ import {
   getProductById,
   createNewProduct,
 } from "../controllers/productcontroller.js";
+import {
+  verifyTokenAndAdmin,
+  verifyTokenAndAuthorization,
+} from "./verifyToken.js";
 
 const productRouter = express.Router();
 
-productRouter.route("/add-product").post(createNewProduct);
-productRouter.route("/").get(getAllProducts);
-productRouter.route("/:id").get(getProductById);
-productRouter.route("/update-product/:id").put(updateProduct);
-productRouter.route("/delete-product/:id").delete(deleteProduct);
+productRouter.route("/add-product").post(verifyTokenAndAdmin, createNewProduct);
+productRouter.route("/").get(verifyTokenAndAuthorization, getAllProducts);
+productRouter.route("/:id").get(verifyTokenAndAuthorization, getProductById);
+productRouter
+  .route("/update-product/:id")
+  .put(verifyTokenAndAdmin, updateProduct);
+productRouter
+  .route("/delete-product/:id")
+  .delete(verifyTokenAndAdmin, deleteProduct);
 
 export default productRouter;

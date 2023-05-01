@@ -9,7 +9,6 @@ export const createNewProduct = async (req, res, next) => {
       res.json({
         message: "new Product has been created",
       });
-      console.log(product);
     }
   } catch (err) {
     next(err);
@@ -24,7 +23,7 @@ export const getAllProducts = async (req, res, next) => {
     let products;
 
     if (qNew) {
-      products = await Product.find().sort({ createdAt: -1 }).limit(1);
+      products = await Product.find().sort({ createdAt: -1 }).limit(5);
     } else if (qCategory) {
       products = await Product.find({
         categories: {

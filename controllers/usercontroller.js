@@ -1,6 +1,7 @@
 import { User } from "../models/User.js";
+import CryptoJS from "crypto-js";
 
-//get all users
+//get all users / get users by querry
 export const getAllUsers = async (req, res, next) => {
   const query = req.query.new;
   const allUsers = query
@@ -13,7 +14,8 @@ export const getAllUsers = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   const { id } = req.params;
   const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
-  res.send(updatedUser);
+  const { password, ...others } = updatedUser._doc;
+  res.send(others);
 };
 
 //get user by id
@@ -65,16 +67,23 @@ export const getUserStats = async (req, res, next) => {
     next(error);
   }
 };
-// create a useر
+// create a user
 
 export const createNewUser = async (req, res, next) => {
   try {
+    let myPlaintextPassword = req.body.password;
+
+    const hash = await CryptoJS.AES.encrypt(
+      myPlaintextPassword,
+      process.env.PASS_SEC
+    ).toString();
+
+    req.body.password = hash;
     const user = await User.create(req.body);
     if (user) {
       res.json({
         message: "new user has been created",
       });
-      console.log(user);
     }
   } catch (err) {
     next(err);
