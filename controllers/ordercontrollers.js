@@ -86,7 +86,8 @@ export const getOrderStats = async (req, res, next) => {
         },
       },
     ]);
-    res.status(200).json(income);
+    console.log(income);
+    res.status(200).send(income);
   } catch (err) {
     res.status(500).json(err);
   }
